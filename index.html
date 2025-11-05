@@ -95,8 +95,18 @@
         return;
       }
 
-      // If text, make sure it doesn't open links
-      if (type === "text") {
+      // ✅ Validate URL input if selected type is URL
+      if (type === "url") {
+        let urlPattern = /^(https?:\/\/)?([\w\-])+\.([a-zA-Z]{2,63})([\/\w\-\.\?=&%]*)*$/;
+        if (!urlPattern.test(data)) {
+          alert("Please enter a valid URL (example: https://example.com)");
+          return;
+        }
+        if (!data.startsWith("http://") && !data.startsWith("https://")) {
+          data = "https://" + data;
+        }
+      } 
+      else if (type === "text") {
         data = "TEXT: " + data;
       }
 
@@ -152,7 +162,6 @@
         img.src = url;
         box.appendChild(img);
 
-        // ✅ Add message below QR code
         let msg = document.createElement("p");
         msg.textContent = "SCAN AND REPORT YOUR ISSUE ON ABOVE GMAIL QR CODE";
         msg.style.marginTop = "10px";
