@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QR Code Generator</title>
   <style>
     body {
@@ -10,6 +12,7 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      margin: 0;
     }
     .container {
       background: white;
@@ -18,13 +21,19 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       text-align: center;
       width: 340px;
+      max-width: 90%;
+    }
+    h2 {
+      color: #007bff;
+      margin-bottom: 15px;
     }
     input, select, button {
       margin: 10px;
-      padding: 8px;
+      padding: 10px;
       width: 90%;
       border-radius: 5px;
       border: 1px solid #ccc;
+      font-size: 16px;
     }
     #qrBox {
       margin-top: 20px;
@@ -36,8 +45,7 @@
     }
     img {
       display: block;
-      margin-left: auto;
-      margin-right: auto;
+      margin: auto;
       width: 250px;
       height: 250px;
     }
@@ -46,6 +54,7 @@
       color: white;
       border: none;
       cursor: pointer;
+      transition: background-color 0.3s;
     }
     button:hover {
       background-color: #0056b3;
@@ -58,110 +67,94 @@
     #downloadBtn:hover {
       background-color: #1e7e34;
     }
+    .help button {
+      background-color: #ff9800;
+      margin-top: 10px;
+    }
+    .help button:hover {
+      background-color: #e68900;
+    }
+
+    /* ✅ Responsive for phones */
+    @media screen and (max-width: 480px) {
+      .container {
+        width: 90%;
+        padding: 20px;
+      }
+      img {
+        width: 200px;
+        height: 200px;
+      }
+      input, select, button {
+        width: 100%;
+        font-size: 14px;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>QR Code Generator</h2>
+    <h2>QR Code Generator (Django)</h2>
 
-    <label>Select Type:</label>
-    <select id="type">
-      <option value="text">Text</option>
-      <option value="url">URL</option>
-    </select><br>
+    <form method="GET" onsubmit="return validateInput()">
+      <label>Select Type:</label>
+      <select name="type" id="type">
+        <option value="text">Text</option>
+        <option value="url">URL</option>
+      </select><br>
 
-    <input type="text" id="data" placeholder="Enter text or URL">
-    <button onclick="generateQR()">Generate QR</button>
+      <input type="text" id="data" name="data" placeholder="Enter text or URL">
+      <button type="submit">Generate QR</button>
+    </form>
 
-    <div id="qrcode"></div>
-    <button id="downloadBtn" onclick="downloadQR()">Download QR</button>
+    {% if qr_data_uri %}
+      <div id="qrBox">
+        <img id="qrImage" src="{{ qr_data_uri }}" alt="QR Code">
+        <p><b>{{ qr_text }}</b></p>
+      </div>
+      <button id="downloadBtn" onclick="downloadQR()">Download QR</button>
+      <script>
+        document.getElementById("downloadBtn").style.display = "inline-block";
+      </script>
+    {% endif %}
 
     <div class="help">
-      <button onclick="generateHelpQR()">Help Center</button>
+      <form method="GET">
+        <input type="hidden" name="type" value="help">
+        <input type="hidden" name="data" value="help">
+        <button type="submit">Help Center</button>
+      </form>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script>
-    function generateQR() {
-      let type = document.getElementById("type").value;
-      let data = document.getElementById("data").value.trim();
-      let qrDiv = document.getElementById("qrcode");
-      qrDiv.innerHTML = "";
-      document.getElementById("downloadBtn").style.display = "none";
+    function validateInput() {
+      const data = document.getElementById("data").value.trim();
+      const type = document.getElementById("type").value;
 
       if (data === "") {
-        alert("Please enter something!");
-        return;
+        alert("⚠️ Please enter input to generate QR code");
+        return false;
       }
 
-      // If text, make sure it doesn't open links
-      if (type === "text") {
-        data = "TEXT: " + data;
-      }
-
-      QRCode.toDataURL(data, {
-        width: 700,
-        margin: 2,
-        color: {
-          dark: "#000000",
-          light: "#ffffff"
+      if (type === "url") {
+        const urlPattern = /^(https?:\/\/)?([\w\-])+\.([a-zA-Z]{2,63})([\/\w\-\.\?=&%]*)*$/;
+        if (!urlPattern.test(data)) {
+          alert("⚠️ Please enter a valid URL (example: https://www.example.com)");
+          return false;
         }
-      }, function (err, url) {
-        let box = document.createElement("div");
-        box.id = "qrBox";
+      }
 
-        let img = document.createElement("img");
-        img.id = "qrImage";
-        img.src = url;
-        box.appendChild(img);
-        qrDiv.appendChild(box);
-
-        document.getElementById("downloadBtn").style.display = "inline-block";
-      });
+      return true; // submit form
     }
 
     function downloadQR() {
-      let img = document.getElementById("qrImage");
+      const img = document.getElementById("qrImage");
       if (!img) return;
-      let link = document.createElement("a");
+      const link = document.createElement("a");
       link.href = img.src;
       link.download = "qrcode.png";
       link.click();
-    }
-
-    function generateHelpQR() {
-      let qrDiv = document.getElementById("qrcode");
-      qrDiv.innerHTML = "";
-      document.getElementById("downloadBtn").style.display = "none";
-
-      let mail = "mailto:dhoniseravath0134@gmail.com?subject=Need%20Help&body=Hi%20Dhoni%2C%20I%20need%20some%20help%20regarding%20the%20QR%20project.";
-      QRCode.toDataURL(mail, {
-        width: 700,
-        margin: 2,
-        color: {
-          dark: "#000000",
-          light: "#ffffff"
-        }
-      }, function (err, url) {
-        let box = document.createElement("div");
-        box.id = "qrBox";
-
-        let img = document.createElement("img");
-        img.id = "qrImage";
-        img.src = url;
-        box.appendChild(img);
-
-        // ✅ Add message below QR code
-        let msg = document.createElement("p");
-        msg.textContent = "SCAN AND REPORT YOUR ISSUE ON ABOVE GMAIL QR CODE";
-        msg.style.marginTop = "10px";
-        msg.style.fontWeight = "bold";
-        msg.style.color = "#333";
-
-        box.appendChild(msg);
-        qrDiv.appendChild(box);
-      });
     }
   </script>
 </body>
