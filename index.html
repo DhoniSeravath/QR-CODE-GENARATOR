@@ -103,9 +103,9 @@
     p {
       font-size: 0.9rem;
       color: #333;
+      word-break: break-word;
     }
 
-    /* 📱 Mobile Optimization */
     @media (max-width: 480px) {
       .container {
         padding: 15px;
@@ -155,45 +155,54 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script>
     function generateQR() {
-      let type = document.getElementById("type").value;
-      let data = document.getElementById("data").value.trim();
-      let qrDiv = document.getElementById("qrcode");
+      const type = document.getElementById("type").value;
+      const originalInput = document.getElementById("data").value.trim();
+      let dataForQR = originalInput;
+      const qrDiv = document.getElementById("qrcode");
+
       qrDiv.innerHTML = "";
       document.getElementById("downloadBtn").style.display = "none";
 
-      if (data === "") {
+      if (originalInput === "") {
         alert("Please enter something!");
         return;
       }
 
       if (type === "url") {
-        let urlPattern = /^(https?:\/\/)?([\w\-])+\.([a-zA-Z]{2,63})([\/\w\-\.\?=&%])*$/;
-        if (!urlPattern.test(data)) {
+        const urlPattern = /^(https?:\/\/)?([\w\-])+\.([a-zA-Z]{2,63})([\/\w\-\.\?=&%]*)*$/;
+        if (!urlPattern.test(originalInput)) {
           alert("Please enter a valid URL (example: https://example.com)");
           return;
         }
-        if (!data.startsWith("http://") && !data.startsWith("https://")) {
-          data = "https://" + data;
+        if (!originalInput.startsWith("http://") && !originalInput.startsWith("https://")) {
+          dataForQR = "https://" + originalInput;
         }
-      } else if (type === "text") {
-        data = "TEXT : " + data;
       }
 
-      QRCode.toDataURL(data, {
+      QRCode.toDataURL(dataForQR, {
         width: 500,
         margin: 2,
         color: { dark: "#000000", light: "#ffffff" }
       }, function (err, url) {
-        let box = document.createElement("div");
+        if (err) {
+          console.error(err);
+          alert("Failed to generate QR.");
+          return;
+        }
+
+        const box = document.createElement("div");
         box.id = "qrBox";
 
-        let img = document.createElement("img");
+        const img = document.createElement("img");
         img.id = "qrImage";
         img.src = url;
 
-        // ✅ Show text/URL below the QR
-        let showText = document.createElement("p");
-        showText.textContent = data;
+        const showText = document.createElement("p");
+        if (type === "text") {
+          showText.textContent = "Text: " + originalInput;
+        } else {
+          showText.textContent = "Website: " + originalInput;
+        }
         showText.style.fontWeight = "bold";
         showText.style.marginTop = "10px";
 
@@ -202,38 +211,45 @@
         qrDiv.appendChild(box);
 
         document.getElementById("downloadBtn").style.display = "inline-block";
+
+        // ✅ Clear input box after QR is generated
+        document.getElementById("data").value = "";
       });
     }
 
     function downloadQR() {
-      let img = document.getElementById("qrImage");
+      const img = document.getElementById("qrImage");
       if (!img) return;
-      let link = document.createElement("a");
+      const link = document.createElement("a");
       link.href = img.src;
       link.download = "qrcode.png";
       link.click();
     }
 
     function generateHelpQR() {
-      let qrDiv = document.getElementById("qrcode");
+      const qrDiv = document.getElementById("qrcode");
       qrDiv.innerHTML = "";
       document.getElementById("downloadBtn").style.display = "none";
 
-      let mail = "mailto:dhoniseravath0134@gmail.com?subject=Need%20Help&body=Hi%20Dhoni%2C%20I%20need%20some%20help%20regarding%20the%20QR%20project.";
+      const mail = "mailto:dhoniseravath0134@gmail.com?subject=Need%20Help&body=Hi%20Dhoni%2C%20I%20need%20some%20help%20regarding%20the%20QR%20project.";
       QRCode.toDataURL(mail, {
         width: 500,
         margin: 2,
         color: { dark: "#000000", light: "#ffffff" }
       }, function (err, url) {
-        let box = document.createElement("div");
+        if (err) {
+          console.error(err);
+          return;
+        }
+        const box = document.createElement("div");
         box.id = "qrBox";
 
-        let img = document.createElement("img");
+        const img = document.createElement("img");
         img.id = "qrImage";
         img.src = url;
         box.appendChild(img);
 
-        let msg = document.createElement("p");
+        const msg = document.createElement("p");
         msg.textContent = "SCAN AND REPORT YOUR ISSUE ON ABOVE GMAIL QR CODE";
         msg.style.marginTop = "10px";
         msg.style.fontWeight = "bold";
