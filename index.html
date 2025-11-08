@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 340px;
+      max-width: 90%;
+    }
+    h2 {
+      color: #007bff;
+      margin-bottom: 15px;
+    }
+    input, select, button {
+      margin: 10px;
+      padding: 10px;
+      width: 90%;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    #qrBox {
+      margin-top: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      display: inline-block;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    }
+    img {
+      display: block;
+      margin: auto;
+      width: 250px;
+      height: 250px;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #downloadBtn {
+      display: none;
+      margin-top: 10px;
+      background-color: #28a745;
+    }
+    #downloadBtn:hover {
+      background-color: #1e7e34;
+    }
+    .help button {
+      background-color: #ff9800;
+      margin-top: 10px;
+    }
+    .help button:hover {
+      background-color: #e68900;
+    }
+
+    /* ✅ Responsive for phones */
+    @media screen and (max-width: 480px) {
+      .container {
+        width: 90%;
+        padding: 20px;
+      }
+      img {
+        width: 200px;
+        height: 200px;
+      }
+      input, select, button {
+        width: 100%;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>QR Code Generator (Django)</h2>
+
+    <form method="GET" onsubmit="return validateInput()">
+      <label>Select Type:</label>
+      <select name="type" id="type">
+        <option value="text">Text</option>
+        <option value="url">URL</option>
+      </select><br>
+
+      <input type="text" id="data" name="data" placeholder="Enter text or URL">
+      <button type="submit">Generate QR</button>
+    </form>
+
+    {% if qr_data_uri %}
+      <div id="qrBox">
+        <img id="qrImage" src="{{ qr_data_uri }}" alt="QR Code">
+        <p><b>{{ qr_text }}</b></p>
+      </div>
+      <button id="downloadBtn" onclick="downloadQR()">Download QR</button>
+      <script>
+        document.getElementById("downloadBtn").style.display = "inline-block";
+      </script>
+    {% endif %}
+
+    <div class="help">
+      <form method="GET">
+        <input type="hidden" name="type" value="help">
+        <input type="hidden" name="data" value="help">
+        <button type="submit">Help Center</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function validateInput() {
+      const data = document.getElementById("data").value.trim();
+      const type = document.getElementById("type").value;
+
+      if (data === "") {
+        alert("⚠️ Please enter input to generate QR code");
+        return false;
+      }
+
+      if (type === "url") {
+        const urlPattern = /^(https?:\/\/)?([\w\-])+\.([a-zA-Z]{2,63})([\/\w\-\.\?=&%]*)*$/;
+        if (!urlPattern.test(data)) {
+          alert("⚠️ Please enter a valid URL (example: https://www.example.com)");
+          return false;
+        }
+      }
+
+      return true; // submit form
+    }
+
+    function downloadQR() {
+      const img = document.getElementById("qrImage");
+      if (!img) return;
+      const link = document.createElement("a");
+      link.href = img.src;
+      link.download = "qrcode.png";
+      link.click();
+    }
+  </script>
+</body>
+</html>
