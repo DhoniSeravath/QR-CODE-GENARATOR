@@ -23,7 +23,7 @@ def home(request):
         else:
             qr_text = "Invalid input type!"
 
-        # ✅ Generate QR
+        # ✅ Generate QR .
         qr = qrcode.make(data)
         buffer = io.BytesIO()
         qr.save(buffer, format="PNG")
