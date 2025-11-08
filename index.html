@@ -37,7 +37,7 @@
       margin-top: 10px;
       font-weight: bold;
       color: #333;
-      text-align: left;
+      text-align: center;
     }
 
     input, select, button {
@@ -167,7 +167,7 @@
       }
 
       if (type === "url") {
-        let urlPattern = /^(https?:\/\/)?([\w\-])+\.([a-zA-Z]{2,63})([\/\w\-\.\?=&%])*/;
+        let urlPattern = /^(https?:\/\/)?([\w\-])+\.([a-zA-Z]{2,63})([\/\w\-\.\?=&%])*$/;
         if (!urlPattern.test(data)) {
           alert("Please enter a valid URL (example: https://example.com)");
           return;
@@ -176,7 +176,7 @@
           data = "https://" + data;
         }
       } else if (type === "text") {
-        data = "TEXT: " + data;
+        data = "TEXT : " + data;
       }
 
       QRCode.toDataURL(data, {
@@ -190,7 +190,15 @@
         let img = document.createElement("img");
         img.id = "qrImage";
         img.src = url;
+
+        // ✅ Show text/URL below the QR
+        let showText = document.createElement("p");
+        showText.textContent = data;
+        showText.style.fontWeight = "bold";
+        showText.style.marginTop = "10px";
+
         box.appendChild(img);
+        box.appendChild(showText);
         qrDiv.appendChild(box);
 
         document.getElementById("downloadBtn").style.display = "inline-block";
