@@ -2,7 +2,6 @@ import io
 import base64
 import qrcode
 from django.shortcuts import render
-from django.http import HttpResponse
 
 def home(request):
     qr_data_uri = None
@@ -11,22 +10,24 @@ def home(request):
     data = request.GET.get("data")
 
     if data:
-        # Decide what to generate
+        # ✅ Choose what to generate
         if qr_type == "help":
-            data = "mailto:dhoniseravath0134@gmail.com?subject=QR%20Help&body=Hello%20Dhonu"
+            data = "mailto:dhoniseravath0134@gmail.com?subject=Need%20Help&body=Hi%20Dhonu%2C%20I%20need%20some%20help%20regarding%20the%20QR%20project."
+            qr_text = "SCAN AND REPORT YOUR ISSUE ON ABOVE GMAIL QR CODE"
         elif qr_type == "url":
-            if not data.startswith("http"):
+            if not data.startswith("http://") and not data.startswith("https://"):
                 data = "https://" + data
+            qr_text = f"Website: {data}"
         elif qr_type == "text":
-            data = data
+            qr_text = f"Text: {data}"
         else:
-            data = "Invalid type"
+            qr_text = "Invalid input type!"
 
+        # ✅ Generate QR
         qr = qrcode.make(data)
         buffer = io.BytesIO()
         qr.save(buffer, format="PNG")
         img_b64 = base64.b64encode(buffer.getvalue()).decode()
         qr_data_uri = f"data:image/png;base64,{img_b64}"
-        qr_text = data
 
     return render(request, "index.html", {"qr_data_uri": qr_data_uri, "qr_text": qr_text})
