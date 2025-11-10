@@ -153,128 +153,116 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-<script>
-  function generateQR() {
-    const type = document.getElementById("type").value;
-    const originalInput = document.getElementById("data").value.trim();
-    let dataForQR = originalInput;
-    const qrDiv = document.getElementById("qrcode");
+  <script>
+    let lastQRName = "qrcode"; // store last QR name (text/url/help)
 
-    qrDiv.innerHTML = "";
-    document.getElementById("downloadBtn").style.display = "none";
+    function generateQR() {
+      const type = document.getElementById("type").value;
+      const originalInput = document.getElementById("data").value.trim();
+      let dataForQR = originalInput;
+      const qrDiv = document.getElementById("qrcode");
 
-    if (originalInput === "") {
-      alert("Please enter something!");
-      return;
-    }
+      qrDiv.innerHTML = "";
+      document.getElementById("downloadBtn").style.display = "none";
 
-    if (type === "url") {
-      const urlPattern = /^(https?:\/\/)?([\w\-])+\.([a-zA-Z]{2,63})([\/\w\-\.\?=&%]*)*$/;
-      if (!urlPattern.test(originalInput)) {
-        alert("Please enter a valid URL (example: https://example.com)");
-        return;
-      }
-      if (!originalInput.startsWith("http://") && !originalInput.startsWith("https://")) {
-        dataForQR = "https://" + originalInput;
-      }
-    }
-
-    QRCode.toDataURL(dataForQR, {
-      width: 500,
-      margin: 2,
-      color: { dark: "#000000", light: "#ffffff" }
-    }, function (err, url) {
-      if (err) {
-        console.error(err);
-        alert("Failed to generate QR.");
+      if (originalInput === "") {
+        alert("Please enter something!");
         return;
       }
 
-      const box = document.createElement("div");
-      box.id = "qrBox";
-
-      const img = document.createElement("img");
-      img.id = "qrImage";
-      img.src = url;
-
-      const showText = document.createElement("p");
-      if (type === "text") {
-        showText.textContent = "Text: " + originalInput;
-      } else {
-        showText.textContent = "Website: " + originalInput;
+      if (type === "url") {
+        const urlPattern = /^(https?:\/\/)?([\w\-])+\.([a-zA-Z]{2,63})([\/\w\-\.\?=&%]*)*$/;
+        if (!urlPattern.test(originalInput)) {
+          alert("Please enter a valid URL (example: https://example.com)");
+          return;
+        }
+        if (!originalInput.startsWith("http://") && !originalInput.startsWith("https://")) {
+          dataForQR = "https://" + originalInput;
+        }
       }
-      showText.style.fontWeight = "bold";
-      showText.style.marginTop = "10px";
 
-      box.appendChild(img);
-      box.appendChild(showText);
-      qrDiv.appendChild(box);
+      QRCode.toDataURL(dataForQR, {
+        width: 500,
+        margin: 2,
+        color: { dark: "#000000", light: "#ffffff" }
+      }, function (err, url) {
+        if (err) {
+          console.error(err);
+          alert("Failed to generate QR.");
+          return;
+        }
 
-      document.getElementById("downloadBtn").style.display = "inline-block";
-      document.getElementById("data").value = "";
-    });
-  }
+        const box = document.createElement("div");
+        box.id = "qrBox";
 
-  // ✅ Download with correct filename
-  function downloadQR() {
-    const img = document.getElementById("qrImage");
-    if (!img) return;
+        const img = document.createElement("img");
+        img.id = "qrImage";
+        img.src = url;
 
-    let userInput = document.getElementById("data").value.trim();
+        const showText = document.createElement("p");
+        if (type === "text") {
+          showText.textContent = "Text: " + originalInput;
+        } else {
+          showText.textContent = "Website: " + originalInput;
+        }
+        showText.style.fontWeight = "bold";
+        showText.style.marginTop = "10px";
 
-    if (!userInput) {
-      const textElem = document.querySelector("#qrBox p");
-      if (textElem) {
-        userInput = textElem.textContent
-          .replace(/^Text:\s*/i, "")
-          .replace(/^Website:\s*/i, "")
-          .replace(/^SCAN.*/i, "help_qr"); // For Help QR
-      }
+        box.appendChild(img);
+        box.appendChild(showText);
+        qrDiv.appendChild(box);
+
+        document.getElementById("downloadBtn").style.display = "inline-block";
+        lastQRName = originalInput || "qrcode";
+        document.getElementById("data").value = "";
+      });
     }
 
-    const safeName = userInput.replace(/[^a-zA-Z0-9]/g, "_") || "qrcode";
+    function downloadQR() {
+      const img = document.getElementById("qrImage");
+      if (!img) return;
 
-    const link = document.createElement("a");
-    link.href = img.src;
-    link.download = safeName + ".png";
-    link.click();
-  }
+      let fileName = lastQRName.replace(/[^a-zA-Z0-9]/g, "_") || "qrcode";
+      const link = document.createElement("a");
+      link.href = img.src;
+      link.download = fileName + ".png";
+      link.click();
+    }
 
-  // ✅ Help QR Generator (with download button)
-  function generateHelpQR() {
-    const qrDiv = document.getElementById("qrcode");
-    qrDiv.innerHTML = "";
-    document.getElementById("downloadBtn").style.display = "none";
+    function generateHelpQR() {
+      const qrDiv = document.getElementById("qrcode");
+      qrDiv.innerHTML = "";
+      document.getElementById("downloadBtn").style.display = "none";
 
-    const mail = "mailto:dhoniseravath0134@gmail.com?subject=Need%20Help&body=Hi%20Dhoni%2C%20I%20need%20some%20help%20regarding%20the%20QR%20project.";
-    QRCode.toDataURL(mail, {
-      width: 500,
-      margin: 2,
-      color: { dark: "#000000", light: "#ffffff" }
-    }, function (err, url) {
-      if (err) {
-        console.error(err);
-        return;
-      }
+      const mail = "mailto:dhoniseravath0134@gmail.com?subject=Need%20Help&body=Hi%20Dhoni%2C%20I%20need%20some%20help%20regarding%20the%20QR%20project.";
+      QRCode.toDataURL(mail, {
+        width: 500,
+        margin: 2,
+        color: { dark: "#000000", light: "#ffffff" }
+      }, function (err, url) {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        const box = document.createElement("div");
+        box.id = "qrBox";
 
-      const box = document.createElement("div");
-      box.id = "qrBox";
+        const img = document.createElement("img");
+        img.id = "qrImage";
+        img.src = url;
+        box.appendChild(img);
 
-      const img = document.createElement("img");
-      img.id = "qrImage";
-      img.src = url;
-      box.appendChild(img);
+        const msg = document.createElement("p");
+        msg.textContent = "SCAN AND REPORT YOUR ISSUE ON ABOVE GMAIL QR CODE";
+        msg.style.marginTop = "10px";
+        msg.style.fontWeight = "bold";
+        box.appendChild(msg);
 
-      const msg = document.createElement("p");
-      msg.textContent = "SCAN AND REPORT YOUR ISSUE ON ABOVE GMAIL QR CODE";
-      msg.style.marginTop = "10px";
-      msg.style.fontWeight = "bold";
-      box.appendChild(msg);
-
-      qrDiv.appendChild(box);
-
-      // ✅ Show download button for Help QR too
-      document.getElementById("downloadBtn").style.display = "inline-block";
-    });
-  }
-</script>
+        qrDiv.appendChild(box);
+        document.getElementById("downloadBtn").style.display = "inline-block";
+        lastQRName = "Help_QR";
+      });
+    }
+  </script>
+</body>
+</html>
