@@ -217,14 +217,31 @@
       });
     }
 
-    function downloadQR() {
-      const img = document.getElementById("qrImage");
-      if (!img) return;
-      const link = document.createElement("a");
-      link.href = img.src;
-      link.download = "qrcode.png";
-      link.click();
+function downloadQR() {
+  const img = document.getElementById("qrImage");
+  if (!img) return;
+
+  // Get the text or URL entered by the user
+  let userInput = document.getElementById("data").value.trim();
+
+  // If input is empty (because you cleared it after generation), find it from the QR text below the image
+  if (!userInput) {
+    const textElem = document.querySelector("#qrBox p");
+    if (textElem) {
+      userInput = textElem.textContent.replace(/^Text:\s*/i, "").replace(/^Website:\s*/i, "");
     }
+  }
+
+  // Clean file name (remove special characters)
+  const safeName = userInput.replace(/[^a-zA-Z0-9]/g, "_") || "qrcode";
+
+  // Create link and download with name
+  const link = document.createElement("a");
+  link.href = img.src;
+  link.download = safeName + ".png";
+  link.click();
+}
+
 
     function generateHelpQR() {
       const qrDiv = document.getElementById("qrcode");
@@ -261,3 +278,4 @@
   </script>
 </body>
 </html>
+
